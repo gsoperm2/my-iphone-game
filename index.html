@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iPhone Lock Screen</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* ===== iPhone Frame ===== */
+        .iphone-frame {
+            position: relative;
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 50px;
+            box-shadow: 0 0 0 12px #1a1a1a, 0 0 0 14px #2c2c2c, 0 20px 60px rgba(0,0,0,0.8);
+            overflow: hidden;
+            transform: scale(0.9);
+        }
+
+        @media (max-height: 900px) {
+            .iphone-frame { transform: scale(0.8); }
+        }
+        @media (max-height: 750px) {
+            .iphone-frame { transform: scale(0.7); }
+        }
+
+        /* Notch */
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 30px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 100;
+        }
+
+        /* ===== Lock Screen (Wallpaper) ===== */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .lock-screen {
+            background: linear-gradient(160deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+            z-index: 10;
+        }
+
+        .lock-screen.hidden {
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 24px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            z-index: 20;
+        }
+
+        .status-bar .left,
+        .status-bar .right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .battery {
+            width: 24px;
+            height: 12px;
+            border: 1.5px solid #fff;
+            border-radius: 3px;
+            position: relative;
+            padding: 1.5px;
+        }
+        .battery::after {
+            content: '';
+            position: absolute;
+            right: -4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2px;
+            height: 5px;
+            background: #fff;
+            border-radius: 0 1px 1px 0;
+        }
+        .battery-level {
+            height: 100%;
+            width: 80%;
+            background: #fff;
+            border-radius: 1px;
+        }
+
+        /* Lock Screen Content */
+        .lock-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 120px;
+            color: #fff;
+        }
+
+        .lock-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .lock-date {
+            font-size: 16px;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .lock-time {
+            font-size: 80px;
+            font-weight: 200;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 40px;
+        }
+
+        .swipe-hint {
+            font-size: 14px;
+            opacity: 0.6;
+            animation: pulse 2s ease-in-out infinite;
+            cursor: pointer;
+            padding: 10px 30px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Bottom bar */
+        .home-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            height: 5px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 3px;
+            z-index: 50;
+        }
+
+        /* ===== Passcode Screen ===== */
+        .passcode-screen {
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .passcode-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .passcode-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 0 40px;
+        }
+
+        .passcode-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 30px;
+        }
+
+        .dots-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255,255,255,0.6);
+            background: transparent;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        .dot.filled {
+            background: #fff;
+            border-color: #fff;
+        }
+
+        .error-message {
+            font-size: 14px;
+            color: #ff453a;
+            font-weight: 500;
+            height: 20px;
+            margin-bottom: 10px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+        }
+
+        .lockout-message {
+            font-size: 14px;
+            color: #ff9f0a;
+            font-weight: 500;
+            height: 20px;
+            margin-bottom: 10px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .lockout-message.show {
+            opacity: 1;
+        }
+
+        /* Keypad */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 280px;
+            margin-bottom: 24px;
+        }
+
+        .key {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            font-size: 32px;
+            font-weight: 400;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.1s ease, transform 0.1s ease;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .key:active {
+            background: rgba(255,255,255,0.35);
+            transform: scale(0.95);
+        }
+
+        .key .sub {
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            opacity: 0.6;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .key.delete-key,
+        .key.empty-key {
+            background: transparent;
+            font-size: 18px;
+        }
+
+        .key.delete-key:active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .key.empty-key {
+            pointer-events: none;
+        }
+
+        /* Bottom buttons */
+        .passcode-bottom {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 280px;
+            padding: 0 8px;
+        }
+
+        .bottom-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 12px;
+            opacity: 0.9;
+        }
+
+        .bottom-btn:active {
+            opacity: 0.5;
+        }
+
+        /* Shake animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10% { transform: translateX(-10px); }
+            20% { transform: translateX(10px); }
+            30% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            50% { transform: translateX(-6px); }
+            60% { transform: translateX(6px); }
+            70% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
+            90% { transform: translateX(-1px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* ===== History Panel (Hidden) ===== */
+        .history-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 80px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .history-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            margin-bottom: 16px;
+        }
+
+        .history-header h2 {
+            color: #fff;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .close-history {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 24px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .history-code {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 4px;
+        }
+
+        .history-badge {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .history-badge.success {
+            background: rgba(52, 199, 89, 0.3);
+            color: #34c759;
+        }
+
+        .history-badge.fail {
+            background: rgba(255, 69, 58, 0.3);
+            color: #ff453a;
+        }
+
+        .history-empty {
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            margin-top: 40px;
+            font-size: 15px;
+        }
+
+        /* Swipe hint for history (subtle) */
+        .history-swipe-hint {
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            z-index: 40;
+        }
+    </style>
+</head>
+<body>
+
+<div class="iphone-frame" id="iphoneFrame">
+    <div class="notch"></div>
+
+    <!-- ===== Lock Screen ===== -->
+    <div class="screen lock-screen" id="lockScreen">
+        <div class="status-bar">
+            <div class="left">
+                <span id="statusTime">9:41</span>
+            </div>
+            <div class="right">
+                <span>●●●</span>
+                <span>WiFi</span>
+                <div class="battery"><div class="battery-level"></div></div>
+            </div>
+        </div>
+
+        <div class="lock-content">
+            <div class="lock-icon">🔒</div>
+            <div class="lock-date" id="lockDate">Понедельник, 22 октября</div>
+            <div class="lock-time" id="lockTime">9:41</div>
+            <div class="swipe-hint" id="swipeHint">Смахните вверх, чтобы разблокировать</div>
+        </div>
+
+        <div class="home-indicator"></div>
+    </div>
+
+    <!-- ===== Passcode Screen ===== -->
+    <div class="screen passcode-screen" id="passcodeScreen">
+        <div class="passcode-content" id="passcodeContent">
+            <div class="passcode-title">Введите код-пароль</div>
+
+            <div class="dots-container" id="dotsContainer">
+                <div class="dot" data-index="0"></div>
+                <div class="dot" data-index="1"></div>
+                <div class="dot" data-index="2"></div>
+                <div class="dot" data-index="3"></div>
+                <div class="dot" data-index="4"></div>
+                <div class="dot" data-index="5"></div>
+            </div>
+
+            <div class="error-message" id="errorMessage">Неверный код-пароль</div>
+            <div class="lockout-message" id="lockoutMessage"></div>
+
+            <div class="keypad" id="keypad">
+                <button class="key" data-num="1">1</button>
+                <button class="key" data-num="2">2<span class="sub">ABC</span></button>
+                <button class="key" data-num="3">3<span class="sub">DEF</span></button>
+                <button class="key" data-num="4">4<span class="sub">GHI</span></button>
+                <button class="key" data-num="5">5<span class="sub">JKL</span></button>
+                <button class="key" data-num="6">6<span class="sub">MNO</span></button>
+                <button class="key" data-num="7">7<span class="sub">PQRS</span></button>
+                <button class="key" data-num="8">8<span class="sub">TUV</span></button>
+                <button class="key" data-num="9">9<span class="sub">WXYZ</span></button>
+                <button class="key empty-key"></button>
+                <button class="key" data-num="0">0</button>
+                <button class="key delete-key" id="deleteKey">⌫</button>
+            </div>
+
+            <div class="passcode-bottom">
+                <button class="bottom-btn" id="emergencyBtn">Экстренный вызов</button>
+                <button class="bottom-btn" id="cancelBtn">Отмена</button>
+            </div>
+        </div>
+        <div class="home-indicator"></div>
+    </div>
+
+    <!-- ===== History Overlay (Hidden) ===== -->
+    <div class="history-overlay" id="historyOverlay">
+        <div class="history-header">
+            <h2>История ввода</h2>
+            <button class="close-history" id="closeHistory">✕</button>
+        </div>
+        <div class="history-list" id="historyList">
+            <div class="history-empty">Пока нет попыток</div>
+        </div>
+    </div>
+
+    <!-- Swipe hint for history -->
+    <div class="history-swipe-hint"></div>
+</div>
+
+<script>
+    (function() {
+        // ===== State =====
+        const CORRECT_CODE = '123456';
+        const CODE_LENGTH = 6;
+        const MAX_ATTEMPTS_BEFORE_LOCKOUT = 5;
+
+        let currentInput = '';
+        let failedAttempts = 0;
+        let lockoutEndTime = 0;
+        let lockoutTimer = null;
+        let history = [];
+
+        // DOM refs
+        const lockScreen = document.getElementById('lockScreen');
+        const passcodeScreen = document.getElementById('passcodeScreen');
+        const dotsContainer = document.getElementById('dotsContainer');
+        const dots = dotsContainer.querySelectorAll('.dot');
+        const errorMessage = document.getElementById('errorMessage');
+        const lockoutMessage = document.getElementById('lockoutMessage');
+        const passcodeContent = document.getElementById('passcodeContent');
+        const keypad = document.getElementById('keypad');
+        const deleteKey = document.getElementById('deleteKey');
+        const emergencyBtn = document.getElementById('emergencyBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const historyOverlay = document.getElementById('historyOverlay');
+        const historyList = document.getElementById('historyList');
+        const closeHistory = document.getElementById('closeHistory');
+        const lockTimeEl = document.getElementById('lockTime');
+        const lockDateEl = document.getElementById('lockDate');
+        const statusTimeEl = document.getElementById('statusTime');
+
+        // ===== Clock =====
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const timeStr = `${hours}:${minutes}`;
+            lockTimeEl.textContent = timeStr;
+            statusTimeEl.textContent = timeStr;
+
+            const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+            const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+            lockDateEl.textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // ===== Navigation =====
+        function showPasscodeScreen() {
+            lockScreen.classList.add('hidden');
+            passcodeScreen.classList.add('active');
+            resetInput();
+        }
+
+        function showLockScreen() {
+            passcodeScreen.classList.remove('active');
+            lockScreen.classList.remove('hidden');
+            resetInput();
+        }
+
+        // Swipe up on lock screen to show passcode
+        let lockTouchStartY = 0;
+        lockScreen.addEventListener('touchstart', (e) => {
+            lockTouchStartY = e.touches[0].clientY;
+        });
+        lockScreen.addEventListener('touchend', (e) => {
+            const deltaY = lockTouchStartY - e.changedTouches[0].clientY;
+            if (deltaY > 50) {
+                showPasscodeScreen();
+            }
+        });
+        // Click fallback (for desktop)
+        document.getElementById('swipeHint').addEventListener('click', showPasscodeScreen);
+
+        // ===== Input Handling =====
+        function resetInput() {
+            currentInput = '';
+            updateDots();
+            hideError();
+        }
+
+        function updateDots() {
+            dots.forEach((dot, i) => {
+                if (i < currentInput.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            });
+        }
+
+        function addDigit(digit) {
+            if (lockoutEndTime > Date.now()) return;
+            if (currentInput.length >= CODE_LENGTH) return;
+            currentInput += digit;
+            updateDots();
+            if (currentInput.length === CODE_LENGTH) {
+                setTimeout(checkCode, 150);
+            }
+        }
+
+        function deleteDigit() {
+            if (lockoutEndTime > Date.now()) return;
+            currentInput = currentInput.slice(0, -1);
+            updateDots();
+        }
+
+        function checkCode() {
+            if (currentInput === CORRECT_CODE) {
+                addToHistory(currentInput, true);
+                showSuccess();
+            } else {
+                addToHistory(currentInput, false);
+                failedAttempts++;
+                triggerShake();
+                showError();
+                currentInput = '';
+                updateDots();
+
+                if (failedAttempts >= MAX_ATTEMPTS_BEFORE_LOCKOUT && lockoutEndTime === 0) {
+                    startLockout();
+                }
+            }
+        }
+
+        function triggerShake() {
+            passcodeContent.classList.remove('shake');
+            void passcodeContent.offsetWidth;
+            passcodeContent.classList.add('shake');
+
+            if (navigator.vibrate) {
+                navigator.vibrate(200);
+            }
+        }
+
+        function showError() {
+            errorMessage.classList.add('show');
+            setTimeout(() => {
+                errorMessage.classList.remove('show');
+            }, 2000);
+        }
+
+        function hideError() {
+            errorMessage.classList.remove('show');
+        }
+
+        function showSuccess() {
+            errorMessage.textContent = 'Разблокировано!';
+            errorMessage.style.color = '#34c759';
+            errorMessage.classList.add('show');
+            if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+
+            setTimeout(() => {
+                errorMessage.classList.remove('show');
+                errorMessage.textContent = 'Неверный код-пароль';
+                errorMessage.style.color = '#ff453a';
+                showLockScreen();
+            }, 1200);
+        }
+
+        // ===== Lockout =====
+        function startLockout() {
+            lockoutEndTime = Date.now() + 60 * 1000;
+            lockoutMessage.classList.add('show');
+            updateLockoutMessage();
+            lockoutTimer = setInterval(() => {
+                if (Date.now() >= lockoutEndTime) {
+                    endLockout();
+                } else {
+                    updateLockoutMessage();
+                }
+            }, 1000);
+        }
+
+        function updateLockoutMessage() {
+            const remaining = Math.ceil((lockoutEndTime - Date.now()) / 1000);
+            lockoutMessage.textContent = `Попробуйте через ${remaining} сек.`;
+        }
+
+        function endLockout() {
+            lockoutEndTime = 0;
+            failedAttempts = 0;
+            lockoutMessage.classList.remove('show');
+            clearInterval(lockoutTimer);
+            lockoutTimer = null;
+        }
+
+        // ===== History =====
+        function addToHistory(code, success) {
+            const entry = {
+                code: code,
+                success: success,
+                time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            };
+            history.unshift(entry);
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="history-empty">Пока нет попыток</div>';
+                return;
+            }
+            historyList.innerHTML = history.map(entry => `
+                <div class="history-item">
+                    <span class="history-code">${entry.code}</span>
+                    <span class="history-badge ${entry.success ? 'success' : 'fail'}">
+                        ${entry.success ? 'Успех' : 'Ошибка'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function showHistory() {
+            historyOverlay.classList.add('active');
+            renderHistory();
+        }
+
+        function hideHistory() {
+            historyOverlay.classList.remove('active');
+        }
+
+        // ===== Event Listeners =====
+
+        keypad.addEventListener('click', (e) => {
+            const key = e.target.closest('.key');
+            if (!key) return;
+            const num = key.dataset.num;
+            if (num !== undefined) {
+                addDigit(num);
+            }
+        });
+
+        deleteKey.addEventListener('click', deleteDigit);
+
+        cancelBtn.addEventListener('click', showLockScreen);
+        emergencyBtn.addEventListener('click', () => {
+            alert('Экстренный вызов (заглушка)');
+        });
+
+        closeHistory.addEventListener('click', hideHistory);
+        historyOverlay.addEventListener('click', (e) => {
+            if (e.target === historyOverlay) hideHistory();
+        });
+
+        // ===== Secret Gesture: Swipe down from top =====
+        let historySwipeStartY = 0;
+        let historySwipeStartTime = 0;
+        const SWIPE_THRESHOLD = 80;
+        const SWIPE_MAX_TIME = 500;
+
+        function handleHistorySwipeStart(e) {
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = document.getElementById('iphoneFrame').getBoundingClientRect();
+            const relativeY = touch.clientY - rect.top;
+            if (relativeY < 40) {
+                historySwipeStartY = touch.clientY;
+                historySwipeStartTime = Date.now();
+            } else {
+                historySwipeStartY = null;
+            }
+        }
+
+        function handleHistorySwipeEnd(e) {
+            if (historySwipeStartY === null) return;
+            const touch = e.changedTouches ? e.changedTouches[0] : e;
+            const deltaY = touch.clientY - historySwipeStartY;
+            const elapsed = Date.now() - historySwipeStartTime;
+
+            if (deltaY > SWIPE_THRESHOLD && elapsed < SWIPE_MAX_TIME) {
+                showHistory();
+            }
+            historySwipeStartY = null;
+        }
+
+        const frame = document.getElementById('iphoneFrame');
+        frame.addEventListener('touchstart', handleHistorySwipeStart, { passive: true });
+        frame.addEventListener('touchend', handleHistorySwipeEnd, { passive: true });
+
+        // Mouse fallback for desktop
+        let mouseSwipeActive = false;
+        let mouseStartY = 0;
+        let mouseStartTime = 0;
+
+        frame.addEventListener('mousedown', (e) => {
+            const rect = frame.getBoundingClientRect();
+            const relativeY = e.clientY - rect.top;
+            if (relativeY < 40) {
+                mouseSwipeActive = true;
+                mouseStartY = e.clientY;
+                mouseStartTime = Date.now();
+            }
+        });
+
+        frame.addEventListener('mouseup', (e) => {
+            if (!mouseSwipeActive) return;
+            mouseSwipeActive = false;
+            const deltaY = e.clientY - mouseStartY;
+            const elapsed = Date.now() - mouseStartTime;
+            if (deltaY > SWIPE_THRESHOLD && elapsed < SWIPE_MAX_TIME) {
+                showHistory();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && historyOverlay.classList.contains('active')) {
+                hideHistory();
+            }
+        });
+
+        // ===== Init =====
+        resetInput();
+    })();
+</script>
+</body>
+</html>
