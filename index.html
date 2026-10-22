@@ -4,14 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
-    <!-- ===== PWA / iOS standalone ===== -->
+    <!-- ===== iOS standalone ===== -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Lock Screen">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
+
+    <!-- ===== Android / общий PWA ===== -->
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
 
     <title>Lock Screen</title>
+
+    <!-- Манифест генерируется динамически в <script> ниже -->
 
     <style>
         * {
@@ -57,7 +61,6 @@
             .iphone-frame { transform: scale(0.7); }
         }
 
-        /* Notch */
         .notch {
             position: absolute;
             top: 0;
@@ -70,7 +73,6 @@
             z-index: 100;
         }
 
-        /* ===== Screens ===== */
         .screen {
             position: absolute;
             inset: 0;
@@ -90,7 +92,6 @@
             pointer-events: none;
         }
 
-        /* Status Bar (hidden in real standalone mode) */
         .status-bar {
             display: flex;
             justify-content: space-between;
@@ -135,7 +136,6 @@
             border-radius: 1px;
         }
 
-        /* Lock Screen Content */
         .lock-content {
             flex: 1;
             display: flex;
@@ -192,7 +192,6 @@
             z-index: 50;
         }
 
-        /* ===== Passcode Screen ===== */
         .passcode-screen {
             background: rgba(0, 0, 0, 0.65);
             backdrop-filter: blur(20px);
@@ -275,7 +274,6 @@
             opacity: 1;
         }
 
-        /* Keypad */
         .keypad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -371,7 +369,6 @@
             animation: shake 0.5s ease-in-out;
         }
 
-        /* ===== History ===== */
         .history-overlay {
             position: absolute;
             inset: 0;
@@ -489,9 +486,7 @@
         }
 
         /* ============================================================ */
-        /*  STANDALONE MODE (запущено с иконки на экране «Домой»)         */
-        /*  Убираем рамку и фейковый статус-бар — на iPhone экран сам    */
-        /*  является рамкой, а системная строка iPhone отрисуется сама.  */
+        /*  STANDALONE MODE — работает и на iOS, и на Android            */
         /* ============================================================ */
         @media (display-mode: standalone) {
             body {
@@ -531,7 +526,82 @@
                 bottom: calc(8px + env(safe-area-inset-bottom));
             }
         }
+
+        /* iOS PWA — дополнительная страховка через флаг navigator.standalone */
+        @supports (-webkit-touch-callout: none) {
+            body.ios-standalone .iphone-frame {
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                border-radius: 0;
+                box-shadow: none;
+                transform: none !important;
+            }
+            body.ios-standalone .notch,
+            body.ios-standalone .status-bar,
+            body.ios-standalone .history-swipe-hint {
+                display: none !important;
+            }
+        }
     </style>
+
+    <script>
+        // Генерируем манифест на лету (single-file PWA)
+        (function () {
+            try {
+                var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">'
+                    + '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
+                    + '<stop offset="0" stop-color="#1a1a2e"/>'
+                    + '<stop offset="1" stop-color="#0f3460"/>'
+                    + '</linearGradient></defs>'
+                    + '<rect width="512" height="512" fill="url(#g)"/>'
+                    + '<circle cx="256" cy="200" r="70" fill="none" stroke="#ffffff" stroke-width="26"/>'
+                    + '<rect x="186" y="190" width="140" height="130" rx="22" fill="#ffffff"/>'
+                    + '<circle cx="256" cy="245" r="15" fill="#1a1a2e"/>'
+                    + '<rect x="248" y="245" width="16" height="42" rx="8" fill="#1a1a2e"/>'
+                    + '</svg>';
+                var iconUrl = 'data:image/svg+xml,' + encodeURIComponent(svg);
+
+                var manifest = {
+                    name: 'Lock Screen',
+                    short_name: 'Lock Screen',
+                    start_url: '.',
+                    scope: '.',
+                    display: 'standalone',
+                    orientation: 'portrait',
+                    background_color: '#000000',
+                    theme_color: '#000000',
+                    icons: [
+                        { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
+                        { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any' }
+                    ]
+                };
+
+                var blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+                var url = URL.createObjectURL(blob);
+
+                var link = document.createElement('link');
+                link.rel = 'manifest';
+                link.href = url;
+                document.head.appendChild(link);
+
+                // apple-touch-icon — современный iOS принимает SVG data URI
+                var appleIcon = document.createElement('link');
+                appleIcon.rel = 'apple-touch-icon';
+                appleIcon.href = iconUrl;
+                document.head.appendChild(appleIcon);
+            } catch (e) {
+                // тихо игнорируем — просто не будет кастомной иконки
+            }
+        })();
+
+        // iOS standalone detection — включаем аварийный CSS класс
+        if (navigator.standalone === true) {
+            document.addEventListener('DOMContentLoaded', function () {
+                document.body.classList.add('ios-standalone');
+            });
+        }
+    </script>
 </head>
 <body>
 
@@ -649,13 +719,13 @@
             const now = new Date();
             const hours = now.getHours();
             const minutes = now.getMinutes().toString().padStart(2, '0');
-            const timeStr = `${hours}:${minutes}`;
+            const timeStr = hours + ':' + minutes;
             lockTimeEl.textContent = timeStr;
             if (statusTimeEl) statusTimeEl.textContent = timeStr;
 
             const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
             const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-            lockDateEl.textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+            lockDateEl.textContent = days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()];
         }
         updateClock();
         setInterval(updateClock, 1000);
@@ -673,10 +743,10 @@
         }
 
         let lockTouchStartY = 0;
-        lockScreen.addEventListener('touchstart', (e) => {
+        lockScreen.addEventListener('touchstart', function (e) {
             lockTouchStartY = e.touches[0].clientY;
         }, { passive: true });
-        lockScreen.addEventListener('touchend', (e) => {
+        lockScreen.addEventListener('touchend', function (e) {
             const deltaY = lockTouchStartY - e.changedTouches[0].clientY;
             if (deltaY > 50) showPasscodeScreen();
         });
@@ -689,7 +759,7 @@
         }
 
         function updateDots() {
-            dots.forEach((dot, i) => {
+            dots.forEach(function (dot, i) {
                 if (i < currentInput.length) dot.classList.add('filled');
                 else dot.classList.remove('filled');
             });
@@ -737,7 +807,7 @@
 
         function showError() {
             errorMessage.classList.add('show');
-            setTimeout(() => errorMessage.classList.remove('show'), 2000);
+            setTimeout(function () { errorMessage.classList.remove('show'); }, 2000);
         }
 
         function hideError() {
@@ -749,7 +819,7 @@
             errorMessage.style.color = '#34c759';
             errorMessage.classList.add('show');
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-            setTimeout(() => {
+            setTimeout(function () {
                 errorMessage.classList.remove('show');
                 errorMessage.textContent = 'Неверный код-пароль';
                 errorMessage.style.color = '#ff453a';
@@ -761,7 +831,7 @@
             lockoutEndTime = Date.now() + 60 * 1000;
             lockoutMessage.classList.add('show');
             updateLockoutMessage();
-            lockoutTimer = setInterval(() => {
+            lockoutTimer = setInterval(function () {
                 if (Date.now() >= lockoutEndTime) endLockout();
                 else updateLockoutMessage();
             }, 1000);
@@ -769,7 +839,7 @@
 
         function updateLockoutMessage() {
             const remaining = Math.ceil((lockoutEndTime - Date.now()) / 1000);
-            lockoutMessage.textContent = `Попробуйте через ${remaining} сек.`;
+            lockoutMessage.textContent = 'Попробуйте через ' + remaining + ' сек.';
         }
 
         function endLockout() {
@@ -782,8 +852,8 @@
 
         function addToHistory(code, success) {
             history.unshift({
-                code,
-                success,
+                code: code,
+                success: success,
                 time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
             });
             renderHistory();
@@ -794,14 +864,13 @@
                 historyList.innerHTML = '<div class="history-empty">Пока нет попыток</div>';
                 return;
             }
-            historyList.innerHTML = history.map(e => `
-                <div class="history-item">
-                    <span class="history-code">${e.code}</span>
-                    <span class="history-badge ${e.success ? 'success' : 'fail'}">
-                        ${e.success ? 'Успех' : 'Ошибка'}
-                    </span>
-                </div>
-            `).join('');
+            historyList.innerHTML = history.map(function (e) {
+                return '<div class="history-item">'
+                    + '<span class="history-code">' + e.code + '</span>'
+                    + '<span class="history-badge ' + (e.success ? 'success' : 'fail') + '">'
+                    + (e.success ? 'Успех' : 'Ошибка')
+                    + '</span></div>';
+            }).join('');
         }
 
         function showHistory() {
@@ -812,20 +881,19 @@
             historyOverlay.classList.remove('active');
         }
 
-        keypad.addEventListener('click', (e) => {
+        keypad.addEventListener('click', function (e) {
             const key = e.target.closest('.key');
             if (!key) return;
             if (key.dataset.num !== undefined) addDigit(key.dataset.num);
         });
         deleteKey.addEventListener('click', deleteDigit);
         cancelBtn.addEventListener('click', showLockScreen);
-        emergencyBtn.addEventListener('click', () => alert('Экстренный вызов (заглушка)'));
+        emergencyBtn.addEventListener('click', function () { alert('Экстренный вызов (заглушка)'); });
         closeHistory.addEventListener('click', hideHistory);
-        historyOverlay.addEventListener('click', (e) => {
+        historyOverlay.addEventListener('click', function (e) {
             if (e.target === historyOverlay) hideHistory();
         });
 
-        // Скрытый жест: свайп вниз от верхней кромки → история
         let swipeStartY = null;
         let swipeStartTime = 0;
         const SWIPE_THRESHOLD = 80;
@@ -834,8 +902,7 @@
 
         function startSwipe(y) {
             const rect = frame.getBoundingClientRect();
-            const relY = y - rect.top;
-            if (relY < 40) {
+            if (y - rect.top < 40) {
                 swipeStartY = y;
                 swipeStartTime = Date.now();
             } else {
@@ -845,16 +912,15 @@
         function endSwipe(y) {
             if (swipeStartY === null) return;
             const dy = y - swipeStartY;
-            const elapsed = Date.now() - swipeStartTime;
-            if (dy > SWIPE_THRESHOLD && elapsed < SWIPE_MAX_TIME) showHistory();
+            if (dy > SWIPE_THRESHOLD && Date.now() - swipeStartTime < SWIPE_MAX_TIME) showHistory();
             swipeStartY = null;
         }
 
-        frame.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientY), { passive: true });
-        frame.addEventListener('touchend', (e) => endSwipe(e.changedTouches[0].clientY), { passive: true });
+        frame.addEventListener('touchstart', function (e) { startSwipe(e.touches[0].clientY); }, { passive: true });
+        frame.addEventListener('touchend', function (e) { endSwipe(e.changedTouches[0].clientY); }, { passive: true });
 
         let mouseSwipe = false, mSY = 0, mST = 0;
-        frame.addEventListener('mousedown', (e) => {
+        frame.addEventListener('mousedown', function (e) {
             const rect = frame.getBoundingClientRect();
             if (e.clientY - rect.top < 40) {
                 mouseSwipe = true;
@@ -862,13 +928,13 @@
                 mST = Date.now();
             }
         });
-        frame.addEventListener('mouseup', (e) => {
+        frame.addEventListener('mouseup', function (e) {
             if (!mouseSwipe) return;
             mouseSwipe = false;
             if (e.clientY - mSY > SWIPE_THRESHOLD && Date.now() - mST < SWIPE_MAX_TIME) showHistory();
         });
 
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && historyOverlay.classList.contains('active')) hideHistory();
         });
 
