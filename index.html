@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
-    <!-- ===== iOS standalone ===== -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Lock Screen">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <!-- ===== Android / общий PWA ===== -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
 
@@ -40,7 +37,6 @@
             -webkit-touch-callout: none;
         }
 
-        /* ===== iPhone Frame (desktop preview) ===== */
         .iphone-frame {
             position: relative;
             width: 375px;
@@ -52,12 +48,8 @@
             transform: scale(0.9);
         }
 
-        @media (max-height: 900px) {
-            .iphone-frame { transform: scale(0.8); }
-        }
-        @media (max-height: 750px) {
-            .iphone-frame { transform: scale(0.7); }
-        }
+        @media (max-height: 900px) { .iphone-frame { transform: scale(0.8); } }
+        @media (max-height: 750px) { .iphone-frame { transform: scale(0.7); } }
 
         .notch {
             position: absolute;
@@ -81,6 +73,9 @@
 
         .lock-screen {
             background: linear-gradient(160deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             z-index: 10;
         }
 
@@ -99,6 +94,7 @@
             font-weight: 600;
             color: #fff;
             z-index: 20;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
         }
 
         .status-bar .left,
@@ -142,23 +138,17 @@
             justify-content: center;
             padding-bottom: 120px;
             color: #fff;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.35);
         }
 
-        /* ===== Иконка замка — секретная кнопка истории ===== */
         .lock-icon {
             font-size: 24px;
             margin-bottom: 0;
             opacity: 0.9;
-            cursor: pointer;
             padding: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .lock-date {
@@ -174,19 +164,25 @@
             letter-spacing: -2px;
             line-height: 1;
             margin-bottom: 40px;
+            padding: 8px 16px;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
         }
 
         .swipe-hint {
             font-size: 14px;
-            opacity: 0.6;
+            opacity: 0.7;
             animation: pulse 2s ease-in-out infinite;
             cursor: pointer;
             padding: 10px 30px;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.8; }
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.9; }
         }
 
         .home-indicator {
@@ -196,15 +192,25 @@
             transform: translateX(-50%);
             width: 130px;
             height: 5px;
-            background: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.55);
             border-radius: 3px;
             z-index: 50;
+            pointer-events: none;
+        }
+
+        .history-zone {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 55px;
+            z-index: 60;
         }
 
         .passcode-screen {
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             z-index: 30;
             display: flex;
             flex-direction: column;
@@ -239,6 +245,13 @@
             display: flex;
             gap: 12px;
             margin-bottom: 30px;
+            min-height: 16px;
+            padding: 10px 20px;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
         }
 
         .dot {
@@ -264,10 +277,7 @@
             opacity: 0;
             transition: opacity 0.2s ease;
         }
-
-        .error-message.show {
-            opacity: 1;
-        }
+        .error-message.show { opacity: 1; }
 
         .lockout-message {
             font-size: 14px;
@@ -278,10 +288,7 @@
             opacity: 0;
             transition: opacity 0.2s ease;
         }
-
-        .lockout-message.show {
-            opacity: 1;
-        }
+        .lockout-message.show { opacity: 1; }
 
         .keypad {
             display: grid;
@@ -332,14 +339,8 @@
             background: transparent;
             font-size: 18px;
         }
-
-        .key.delete-key:active {
-            background: rgba(255,255,255,0.15);
-        }
-
-        .key.empty-key {
-            pointer-events: none;
-        }
+        .key.delete-key:active { background: rgba(255,255,255,0.15); }
+        .key.empty-key { pointer-events: none; }
 
         .passcode-bottom {
             display: flex;
@@ -359,10 +360,7 @@
             padding: 8px 12px;
             opacity: 0.9;
         }
-
-        .bottom-btn:active {
-            opacity: 0.5;
-        }
+        .bottom-btn:active { opacity: 0.5; }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -376,17 +374,43 @@
             80% { transform: translateX(3px); }
             90% { transform: translateX(-1px); }
         }
+        .shake { animation: shake 0.5s ease-in-out; }
 
-        .shake {
-            animation: shake 0.5s ease-in-out;
+        /* ===== Тост-уведомление ===== */
+        .toast {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: rgba(0,0,0,0.78);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            z-index: 300;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            text-align: center;
+            white-space: nowrap;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
 
-        .history-overlay {
+        /* ===== Overlays ===== */
+        .history-overlay,
+        .settings-overlay {
             position: absolute;
             inset: 0;
             background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             z-index: 200;
             display: flex;
             flex-direction: column;
@@ -396,27 +420,25 @@
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
-
-        .history-overlay.active {
+        .history-overlay.active,
+        .settings-overlay.active {
             opacity: 1;
             pointer-events: auto;
         }
 
-        .history-header {
+        .overlay-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 24px;
             margin-bottom: 16px;
         }
-
-        .history-header h2 {
+        .overlay-header h2 {
             color: #fff;
             font-size: 22px;
             font-weight: 700;
         }
-
-        .close-history {
+        .close-btn {
             background: rgba(255,255,255,0.15);
             border: none;
             color: #fff;
@@ -430,6 +452,7 @@
             justify-content: center;
         }
 
+        /* ===== History list ===== */
         .history-list {
             flex: 1;
             overflow-y: auto;
@@ -447,11 +470,10 @@
             justify-content: space-between;
             align-items: center;
             color: #fff;
-            animation: slideIn 0.3s ease forwards;
+            animation: slideIn 0.25s ease forwards;
         }
-
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -467,12 +489,10 @@
             padding: 4px 10px;
             border-radius: 20px;
         }
-
         .history-badge.success {
             background: rgba(52, 199, 89, 0.3);
             color: #34c759;
         }
-
         .history-badge.fail {
             background: rgba(255, 69, 58, 0.3);
             color: #ff453a;
@@ -485,27 +505,108 @@
             font-size: 15px;
         }
 
-        .history-swipe-hint {
-            position: absolute;
-            top: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 4px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            z-index: 40;
+        /* ===== Settings panel ===== */
+        .settings-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 24px 40px;
+        }
+
+        .settings-section {
+            margin-bottom: 24px;
+        }
+
+        .settings-label {
+            color: rgba(255,255,255,0.55);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 10px;
+            padding: 0 4px;
+        }
+
+        .wallpaper-preview {
+            height: 220px;
+            border-radius: 16px;
+            background-color: rgba(255,255,255,0.08);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .wallpaper-preview.has-image { color: transparent; }
+
+        .settings-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .settings-buttons .action-btn { flex: 1; }
+
+        .action-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            text-align: center;
+        }
+        .action-btn:active { background: rgba(255,255,255,0.3); }
+
+        .action-btn.danger {
+            background: rgba(255, 69, 58, 0.25);
+            color: #ff453a;
+        }
+        .action-btn.danger:active { background: rgba(255, 69, 58, 0.4); }
+
+        .segmented {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+        }
+        .seg-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 12px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            opacity: 0.6;
+        }
+        .seg-btn.active {
+            background: rgba(255,255,255,0.22);
+            opacity: 1;
+        }
+
+        .settings-hint {
+            color: rgba(255,255,255,0.45);
+            font-size: 12px;
+            padding: 8px 4px 0;
+            line-height: 1.4;
         }
 
         /* ============================================================ */
-        /*  STANDALONE MODE — iOS и Android                              */
+        /*  STANDALONE MODE                                              */
         /* ============================================================ */
         @media (display-mode: standalone) {
-            body {
-                background: #000;
-                padding: 0;
-            }
-
+            body { background: #000; padding: 0; }
             .iphone-frame {
                 width: 100vw;
                 height: 100vh;
@@ -514,51 +615,30 @@
                 box-shadow: none;
                 transform: none !important;
             }
-
-            .notch,
-            .status-bar,
-            .history-swipe-hint {
-                display: none !important;
-            }
-
+            .notch, .status-bar { display: none !important; }
             .lock-content {
                 padding-top: env(safe-area-inset-top);
                 padding-bottom: calc(120px + env(safe-area-inset-bottom));
             }
-
-            .passcode-content {
-                padding-top: env(safe-area-inset-top);
-            }
-
-            .history-overlay {
+            .passcode-content { padding-top: env(safe-area-inset-top); }
+            .history-overlay, .settings-overlay {
                 padding-top: calc(60px + env(safe-area-inset-top));
             }
-
-            .home-indicator {
-                bottom: calc(8px + env(safe-area-inset-bottom));
-            }
+            .home-indicator { bottom: calc(8px + env(safe-area-inset-bottom)); }
+            .history-zone { height: calc(55px + env(safe-area-inset-bottom)); }
         }
 
-        /* iOS PWA — страховка через navigator.standalone */
         @supports (-webkit-touch-callout: none) {
             body.ios-standalone .iphone-frame {
-                width: 100vw;
-                height: 100vh;
-                height: 100dvh;
-                border-radius: 0;
-                box-shadow: none;
-                transform: none !important;
+                width: 100vw; height: 100vh; height: 100dvh;
+                border-radius: 0; box-shadow: none; transform: none !important;
             }
             body.ios-standalone .notch,
-            body.ios-standalone .status-bar,
-            body.ios-standalone .history-swipe-hint {
-                display: none !important;
-            }
+            body.ios-standalone .status-bar { display: none !important; }
         }
     </style>
 
     <script>
-        // Манифест на лету (single-file PWA)
         (function () {
             try {
                 var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">'
@@ -573,28 +653,20 @@
                     + '<rect x="248" y="245" width="16" height="42" rx="8" fill="#1a1a2e"/>'
                     + '</svg>';
                 var iconUrl = 'data:image/svg+xml,' + encodeURIComponent(svg);
-
                 var manifest = {
-                    name: 'Lock Screen',
-                    short_name: 'Lock Screen',
-                    start_url: '.',
-                    scope: '.',
-                    display: 'standalone',
+                    name: 'Lock Screen', short_name: 'Lock Screen',
+                    start_url: '.', scope: '.', display: 'standalone',
                     orientation: 'portrait',
-                    background_color: '#000000',
-                    theme_color: '#000000',
+                    background_color: '#000000', theme_color: '#000000',
                     icons: [
                         { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
                         { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any' }
                     ]
                 };
-
                 var blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-                var url = URL.createObjectURL(blob);
-
                 var link = document.createElement('link');
                 link.rel = 'manifest';
-                link.href = url;
+                link.href = URL.createObjectURL(blob);
                 document.head.appendChild(link);
 
                 var appleIcon = document.createElement('link');
@@ -619,18 +691,15 @@
     <!-- ===== Lock Screen ===== -->
     <div class="screen lock-screen" id="lockScreen">
         <div class="status-bar">
-            <div class="left">
-                <span id="statusTime">9:41</span>
-            </div>
+            <div class="left"><span id="statusTime">9:41</span></div>
             <div class="right">
-                <span>●●●</span>
-                <span>WiFi</span>
+                <span>●●●</span><span>WiFi</span>
                 <div class="battery"><div class="battery-level"></div></div>
             </div>
         </div>
 
         <div class="lock-content">
-            <div class="lock-icon" id="lockIcon">🔒</div>
+            <div class="lock-icon">🔒</div>
             <div class="lock-date" id="lockDate">Понедельник, 22 октября</div>
             <div class="lock-time" id="lockTime">9:41</div>
             <div class="swipe-hint" id="swipeHint">Смахните вверх, чтобы разблокировать</div>
@@ -643,19 +712,9 @@
     <div class="screen passcode-screen" id="passcodeScreen">
         <div class="passcode-content" id="passcodeContent">
             <div class="passcode-title">Введите код-пароль</div>
-
-            <div class="dots-container" id="dotsContainer">
-                <div class="dot" data-index="0"></div>
-                <div class="dot" data-index="1"></div>
-                <div class="dot" data-index="2"></div>
-                <div class="dot" data-index="3"></div>
-                <div class="dot" data-index="4"></div>
-                <div class="dot" data-index="5"></div>
-            </div>
-
+            <div class="dots-container" id="dotsContainer"></div>
             <div class="error-message" id="errorMessage">Неверный код-пароль</div>
             <div class="lockout-message" id="lockoutMessage"></div>
-
             <div class="keypad" id="keypad">
                 <button class="key" data-num="1">1</button>
                 <button class="key" data-num="2">2<span class="sub">ABC</span></button>
@@ -670,7 +729,6 @@
                 <button class="key" data-num="0">0</button>
                 <button class="key delete-key" id="deleteKey">⌫</button>
             </div>
-
             <div class="passcode-bottom">
                 <button class="bottom-btn" id="emergencyBtn">Экстренный вызов</button>
                 <button class="bottom-btn" id="cancelBtn">Отмена</button>
@@ -681,40 +739,99 @@
 
     <!-- ===== History Overlay ===== -->
     <div class="history-overlay" id="historyOverlay">
-        <div class="history-header">
+        <div class="overlay-header">
             <h2>История ввода</h2>
-            <button class="close-history" id="closeHistory">✕</button>
+            <button class="close-btn" id="closeHistory">✕</button>
         </div>
         <div class="history-list" id="historyList">
             <div class="history-empty">Пока нет попыток</div>
         </div>
     </div>
 
-    <div class="history-swipe-hint"></div>
+    <!-- ===== Settings Overlay ===== -->
+    <div class="settings-overlay" id="settingsOverlay">
+        <div class="overlay-header">
+            <h2>Настройки</h2>
+            <button class="close-btn" id="closeSettings">✕</button>
+        </div>
+        <div class="settings-scroll">
+
+            <div class="settings-section">
+                <div class="settings-label">Обои</div>
+                <div class="wallpaper-preview" id="wallpaperPreview">Нет изображения</div>
+                <div class="settings-buttons">
+                    <button class="action-btn" id="chooseWallpaperBtn">Выбрать фото</button>
+                    <button class="action-btn danger" id="resetWallpaperBtn">Сбросить</button>
+                </div>
+                <div class="settings-hint">Фото сохраняется только на этом устройстве.</div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-label">Длина кода-пароля</div>
+                <div class="segmented" id="codeLengthSegmented">
+                    <button class="seg-btn" data-len="4">4 цифры</button>
+                    <button class="seg-btn" data-len="6">6 цифр</button>
+                </div>
+                <div class="settings-hint">
+                    Правильный код для 4 цифр: <b>1234</b>. Для 6: <b>123456</b>.<br>
+                    Быстро переключить: двойной тап по часам.
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-label">История</div>
+                <button class="action-btn danger" id="clearHistoryBtn" style="width:100%">Очистить историю</button>
+            </div>
+
+        </div>
+        <input type="file" id="wallpaperInput" accept="image/*" style="display:none">
+    </div>
+
+    <!-- Тост-уведомление -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Нижняя зона вызова истории -->
+    <div class="history-zone" id="historyZone"></div>
 </div>
 
 <script>
     (function() {
-        const CORRECT_CODE = '123456';
-        const CODE_LENGTH = 6;
+        let CODE_LENGTH = 6;
+        let CORRECT_CODE = '123456';
         const MAX_ATTEMPTS_BEFORE_LOCKOUT = 5;
+        const LS_HISTORY_KEY = 'lockHistory';
+        const LS_WALLPAPER_KEY = 'lockWallpaper';
+        const LS_LENGTH_KEY = 'lockCodeLength';
 
         let currentInput = '';
         let failedAttempts = 0;
         let lockoutEndTime = 0;
         let lockoutTimer = null;
         let history = [];
+        let wallpaperDataUrl = null;
+        let historyPressActive = false;
 
-        // Восстанавливаем историю из localStorage (переживает перезапуск PWA)
+        // ---- Загрузка сохранённого ----
         try {
-            const saved = localStorage.getItem('lockHistory');
+            const saved = localStorage.getItem(LS_HISTORY_KEY);
             if (saved) history = JSON.parse(saved);
         } catch (e) {}
 
+        try {
+            const savedWp = localStorage.getItem(LS_WALLPAPER_KEY);
+            if (savedWp) wallpaperDataUrl = savedWp;
+        } catch (e) {}
+
+        try {
+            const savedLen = localStorage.getItem(LS_LENGTH_KEY);
+            if (savedLen === '4' || savedLen === '6') CODE_LENGTH = parseInt(savedLen);
+        } catch (e) {}
+        CORRECT_CODE = CODE_LENGTH === 4 ? '1234' : '123456';
+
+        // ---- DOM ----
         const lockScreen = document.getElementById('lockScreen');
         const passcodeScreen = document.getElementById('passcodeScreen');
         const dotsContainer = document.getElementById('dotsContainer');
-        const dots = dotsContainer.querySelectorAll('.dot');
         const errorMessage = document.getElementById('errorMessage');
         const lockoutMessage = document.getElementById('lockoutMessage');
         const passcodeContent = document.getElementById('passcodeContent');
@@ -728,13 +845,155 @@
         const lockTimeEl = document.getElementById('lockTime');
         const lockDateEl = document.getElementById('lockDate');
         const statusTimeEl = document.getElementById('statusTime');
-        const lockIcon = document.getElementById('lockIcon');
+        const settingsOverlay = document.getElementById('settingsOverlay');
+        const closeSettings = document.getElementById('closeSettings');
+        const wallpaperPreview = document.getElementById('wallpaperPreview');
+        const chooseWallpaperBtn = document.getElementById('chooseWallpaperBtn');
+        const resetWallpaperBtn = document.getElementById('resetWallpaperBtn');
+        const wallpaperInput = document.getElementById('wallpaperInput');
+        const codeLengthSegmented = document.getElementById('codeLengthSegmented');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const historyZone = document.getElementById('historyZone');
+        const toastEl = document.getElementById('toast');
 
+        let dots = [];
+
+        // ---- Точки ----
+        function renderDots() {
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i < CODE_LENGTH; i++) {
+                const d = document.createElement('div');
+                d.className = 'dot';
+                dotsContainer.appendChild(d);
+            }
+            dots = dotsContainer.querySelectorAll('.dot');
+            updateDots();
+        }
+
+        function updateDots() {
+            dots.forEach(function (dot, i) {
+                if (i < currentInput.length) dot.classList.add('filled');
+                else dot.classList.remove('filled');
+            });
+        }
+
+        // ---- Тост ----
+        let toastTimer = null;
+        function showToast(text) {
+            toastEl.textContent = text;
+            toastEl.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(function () {
+                toastEl.classList.remove('show');
+            }, 1200);
+        }
+
+        // ---- Обои ----
+        function applyWallpaper(url) {
+            if (url) {
+                lockScreen.style.backgroundImage = 'url(' + url + ')';
+            } else {
+                lockScreen.style.backgroundImage = '';
+            }
+        }
+
+        function updateWallpaperPreview() {
+            if (wallpaperDataUrl) {
+                wallpaperPreview.style.backgroundImage = 'url(' + wallpaperDataUrl + ')';
+                wallpaperPreview.classList.add('has-image');
+                wallpaperPreview.textContent = '';
+            } else {
+                wallpaperPreview.style.backgroundImage = '';
+                wallpaperPreview.classList.remove('has-image');
+                wallpaperPreview.textContent = 'Нет изображения';
+            }
+        }
+
+        function resizeImage(file) {
+            return new Promise(function (resolve, reject) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        try {
+                            const MAX_W = 1080, MAX_H = 2340;
+                            let w = img.width, h = img.height;
+                            const ratio = Math.min(MAX_W / w, MAX_H / h, 1);
+                            w = Math.round(w * ratio);
+                            h = Math.round(h * ratio);
+                            const canvas = document.createElement('canvas');
+                            canvas.width = w;
+                            canvas.height = h;
+                            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                            resolve(canvas.toDataURL('image/jpeg', 0.82));
+                        } catch (err) { reject(err); }
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function saveWallpaper(dataUrl) {
+            try {
+                localStorage.setItem(LS_WALLPAPER_KEY, dataUrl);
+                return Promise.resolve(dataUrl);
+            } catch (e) {
+                return new Promise(function (resolve) {
+                    const img = new Image();
+                    img.onload = function () {
+                        const MAX_W = 720, MAX_H = 1560;
+                        let w = img.width, h = img.height;
+                        const ratio = Math.min(MAX_W / w, MAX_H / h, 1);
+                        w = Math.round(w * ratio);
+                        h = Math.round(h * ratio);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        const smallUrl = canvas.toDataURL('image/jpeg', 0.65);
+                        try {
+                            localStorage.setItem(LS_WALLPAPER_KEY, smallUrl);
+                            resolve(smallUrl);
+                        } catch (err) { resolve(null); }
+                    };
+                    img.src = dataUrl;
+                });
+            }
+        }
+
+        chooseWallpaperBtn.addEventListener('click', function () { wallpaperInput.click(); });
+
+        wallpaperInput.addEventListener('change', function (e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            resizeImage(file).then(saveWallpaper).then(function (finalUrl) {
+                if (!finalUrl) {
+                    alert('Не удалось сохранить изображение. Попробуйте фото меньшего размера.');
+                    return;
+                }
+                wallpaperDataUrl = finalUrl;
+                applyWallpaper(wallpaperDataUrl);
+                updateWallpaperPreview();
+            }).catch(function () {
+                alert('Не удалось обработать изображение.');
+            });
+            wallpaperInput.value = '';
+        });
+
+        resetWallpaperBtn.addEventListener('click', function () {
+            wallpaperDataUrl = null;
+            try { localStorage.removeItem(LS_WALLPAPER_KEY); } catch (e) {}
+            applyWallpaper(null);
+            updateWallpaperPreview();
+        });
+
+        // ---- Clock ----
         function updateClock() {
             const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const timeStr = hours + ':' + minutes;
+            const timeStr = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
             lockTimeEl.textContent = timeStr;
             if (statusTimeEl) statusTimeEl.textContent = timeStr;
 
@@ -745,127 +1004,193 @@
         updateClock();
         setInterval(updateClock, 1000);
 
+        // ---- Навигация ----
         function showPasscodeScreen() {
             lockScreen.classList.add('hidden');
             passcodeScreen.classList.add('active');
             resetInput();
         }
-
         function showLockScreen() {
             passcodeScreen.classList.remove('active');
             lockScreen.classList.remove('hidden');
             resetInput();
         }
 
-        // Свайп вверх на экране блокировки → открыть ввод кода
         let lockTouchStartY = 0;
         lockScreen.addEventListener('touchstart', function (e) {
             lockTouchStartY = e.touches[0].clientY;
         }, { passive: true });
         lockScreen.addEventListener('touchend', function (e) {
-            const deltaY = lockTouchStartY - e.changedTouches[0].clientY;
-            if (deltaY > 50) showPasscodeScreen();
+            if (lockTouchStartY - e.changedTouches[0].clientY > 50) showPasscodeScreen();
         });
         document.getElementById('swipeHint').addEventListener('click', showPasscodeScreen);
 
-        // ============================================================
-        //  СКРЫТАЯ ИСТОРИЯ: долгое нажатие (0.6с) на иконку замка 🔒
-        //  Работает и в браузере, и в установленном PWA на Android/iOS
-        // ============================================================
-        (function setupSecretHistoryGesture() {
-            if (!lockIcon) return;
-            let pressTimer = null;
+        // ---- Long-press helper ----
+        function bindLongPress(el, callback, duration) {
+            if (!el) return;
+            let timer = null, sx = 0, sy = 0;
 
-            // Блокируем системное контекстное меню (главная причина бага в PWA)
-            lockIcon.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-            lockIcon.addEventListener('selectstart', function (e) { e.preventDefault(); });
+            el.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+            el.addEventListener('selectstart', function (e) { e.preventDefault(); });
 
-            function startPress() {
-                clearTimeout(pressTimer);
-                pressTimer = setTimeout(function () {
-                    pressTimer = null;
-                    showHistory();
+            function start(e) {
+                const t = e.touches ? e.touches[0] : e;
+                sx = t.clientX; sy = t.clientY;
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                    timer = null;
+                    callback();
                     if (navigator.vibrate) navigator.vibrate(30);
-                }, 600); // раньше системного long-press (~500-700 мс)
+                }, duration);
             }
-            function cancelPress() {
-                if (pressTimer) {
-                    clearTimeout(pressTimer);
-                    pressTimer = null;
-                }
+            function cancel() {
+                if (timer) { clearTimeout(timer); timer = null; }
+            }
+            function move(e) {
+                const t = e.touches ? e.touches[0] : e;
+                if (Math.abs(t.clientX - sx) > 10 || Math.abs(t.clientY - sy) > 10) cancel();
             }
 
             if (window.PointerEvent) {
-                lockIcon.addEventListener('pointerdown', startPress);
-                lockIcon.addEventListener('pointerup', cancelPress);
-                lockIcon.addEventListener('pointercancel', cancelPress);
-                lockIcon.addEventListener('pointerleave', cancelPress);
+                el.addEventListener('pointerdown', start);
+                el.addEventListener('pointerup', cancel);
+                el.addEventListener('pointercancel', cancel);
+                el.addEventListener('pointerleave', cancel);
+                el.addEventListener('pointermove', move);
             } else {
-                lockIcon.addEventListener('touchstart', startPress, { passive: true });
-                lockIcon.addEventListener('touchend', cancelPress);
-                lockIcon.addEventListener('touchcancel', cancelPress);
-                lockIcon.addEventListener('mousedown', startPress);
-                lockIcon.addEventListener('mouseup', cancelPress);
-                lockIcon.addEventListener('mouseleave', cancelPress);
+                el.addEventListener('touchstart', start, { passive: true });
+                el.addEventListener('touchend', cancel);
+                el.addEventListener('touchcancel', cancel);
+                el.addEventListener('touchmove', move, { passive: true });
+                el.addEventListener('mousedown', start);
+                el.addEventListener('mouseup', cancel);
+                el.addEventListener('mouseleave', cancel);
+                el.addEventListener('mousemove', move);
             }
-        })();
+        }
 
-        // ============================================================
-        //  Резервный жест: свайп вниз от верхней кромки (браузер)
-        // ============================================================
-        (function setupSwipeHistoryGesture() {
-            let swipeStartY = null;
-            let swipeStartTime = 0;
-            const SWIPE_THRESHOLD = 80;
-            const SWIPE_MAX_TIME = 500;
-            const frame = document.getElementById('iphoneFrame');
+        // ---- Double-tap helper ----
+        function bindDoubleTap(el, callback) {
+            if (!el) return;
+            let lastTapTime = 0;
+            let downTime = 0, downX = 0, downY = 0, moved = false;
 
-            function startSwipe(y) {
-                const rect = frame.getBoundingClientRect();
-                if (y - rect.top < 40) {
-                    swipeStartY = y;
-                    swipeStartTime = Date.now();
+            el.addEventListener('pointerdown', function (e) {
+                downTime = Date.now();
+                downX = e.clientX;
+                downY = e.clientY;
+                moved = false;
+            });
+            el.addEventListener('pointermove', function (e) {
+                if (Math.abs(e.clientX - downX) > 15 || Math.abs(e.clientY - downY) > 15) moved = true;
+            });
+            el.addEventListener('pointerup', function (e) {
+                if (moved) return;
+                // не считаем долгий тап обычным нажатием
+                if (Date.now() - downTime > 250) return;
+                const now = Date.now();
+                if (now - lastTapTime < 350) {
+                    lastTapTime = 0;
+                    callback();
                 } else {
-                    swipeStartY = null;
-                }
-            }
-            function endSwipe(y) {
-                if (swipeStartY === null) return;
-                const dy = y - swipeStartY;
-                if (dy > SWIPE_THRESHOLD && Date.now() - swipeStartTime < SWIPE_MAX_TIME) showHistory();
-                swipeStartY = null;
-            }
-
-            frame.addEventListener('touchstart', function (e) { startSwipe(e.touches[0].clientY); }, { passive: true });
-            frame.addEventListener('touchend', function (e) { endSwipe(e.changedTouches[0].clientY); }, { passive: true });
-
-            let mouseSwipe = false, mSY = 0, mST = 0;
-            frame.addEventListener('mousedown', function (e) {
-                const rect = frame.getBoundingClientRect();
-                if (e.clientY - rect.top < 40) {
-                    mouseSwipe = true;
-                    mSY = e.clientY;
-                    mST = Date.now();
+                    lastTapTime = now;
                 }
             });
-            frame.addEventListener('mouseup', function (e) {
-                if (!mouseSwipe) return;
-                mouseSwipe = false;
-                if (e.clientY - mSY > SWIPE_THRESHOLD && Date.now() - mST < SWIPE_MAX_TIME) showHistory();
-            });
-        })();
+        }
 
+        // Часы: долгий тап → Настройки
+        bindLongPress(lockTimeEl, showSettings, 700);
+        // Часы: двойной тап → быстрая смена 4/6
+        bindDoubleTap(lockTimeEl, toggleCodeLength);
+        // Точки: двойной тап → быстрая смена 4/6
+        bindDoubleTap(dotsContainer, toggleCodeLength);
+
+        // ---- Быстрая смена длины кода ----
+        function setCodeLength(newLen) {
+            if (newLen !== 4 && newLen !== 6) return;
+            if (newLen === CODE_LENGTH) {
+                showToast('Уже ' + newLen + ' цифры');
+                return;
+            }
+            CODE_LENGTH = newLen;
+            CORRECT_CODE = newLen === 4 ? '1234' : '123456';
+            try { localStorage.setItem(LS_LENGTH_KEY, String(newLen)); } catch (e) {}
+            renderDots();
+            resetInput();
+            updateSegmented();
+            showToast('Режим: ' + newLen + ' цифры');
+            if (navigator.vibrate) navigator.vibrate(30);
+        }
+
+        function toggleCodeLength() {
+            setCodeLength(CODE_LENGTH === 4 ? 6 : 4);
+        }
+
+        // ---- Настройки ----
+        function showSettings() {
+            settingsOverlay.classList.add('active');
+            updateWallpaperPreview();
+            updateSegmented();
+        }
+        function hideSettings() { settingsOverlay.classList.remove('active'); }
+        closeSettings.addEventListener('click', hideSettings);
+        settingsOverlay.addEventListener('click', function (e) {
+            if (e.target === settingsOverlay) hideSettings();
+        });
+
+        // ---- Переключатель длины в настройках ----
+        function updateSegmented() {
+            codeLengthSegmented.querySelectorAll('.seg-btn').forEach(function (btn) {
+                btn.classList.toggle('active', parseInt(btn.dataset.len) === CODE_LENGTH);
+            });
+        }
+
+        codeLengthSegmented.addEventListener('click', function (e) {
+            const btn = e.target.closest('.seg-btn');
+            if (!btn) return;
+            setCodeLength(parseInt(btn.dataset.len));
+        });
+
+        // ---- Очистка истории ----
+        clearHistoryBtn.addEventListener('click', function () {
+            history = [];
+            try { localStorage.removeItem(LS_HISTORY_KEY); } catch (e) {}
+            renderHistory();
+            clearHistoryBtn.textContent = 'Очищено ✓';
+            setTimeout(function () { clearHistoryBtn.textContent = 'Очистить историю'; }, 1500);
+        });
+
+        // ---- Нижняя зона: press-and-hold → история ----
+        historyZone.addEventListener('pointerdown', function (e) {
+            e.preventDefault();
+            historyPressActive = true;
+            showHistory();
+        });
+        historyZone.addEventListener('touchstart', function (e) {
+            if (!window.PointerEvent) {
+                e.preventDefault();
+                historyPressActive = true;
+                showHistory();
+            }
+        }, { passive: false });
+
+        function releaseHistory() {
+            if (historyPressActive) {
+                historyPressActive = false;
+                hideHistory();
+            }
+        }
+        document.addEventListener('pointerup', releaseHistory);
+        document.addEventListener('pointercancel', releaseHistory);
+        document.addEventListener('touchend', releaseHistory);
+        document.addEventListener('touchcancel', releaseHistory);
+        window.addEventListener('blur', releaseHistory);
+
+        // ---- Ввод ----
         function resetInput() {
             currentInput = '';
             updateDots();
             hideError();
-        }
-
-        function updateDots() {
-            dots.forEach(function (dot, i) {
-                if (i < currentInput.length) dot.classList.add('filled');
-                else dot.classList.remove('filled');
-            });
         }
 
         function addDigit(digit) {
@@ -873,9 +1198,7 @@
             if (currentInput.length >= CODE_LENGTH) return;
             currentInput += digit;
             updateDots();
-            if (currentInput.length === CODE_LENGTH) {
-                setTimeout(checkCode, 150);
-            }
+            if (currentInput.length === CODE_LENGTH) setTimeout(checkCode, 150);
         }
 
         function deleteDigit() {
@@ -895,9 +1218,7 @@
                 showError();
                 currentInput = '';
                 updateDots();
-                if (failedAttempts >= MAX_ATTEMPTS_BEFORE_LOCKOUT && lockoutEndTime === 0) {
-                    startLockout();
-                }
+                if (failedAttempts >= MAX_ATTEMPTS_BEFORE_LOCKOUT && lockoutEndTime === 0) startLockout();
             }
         }
 
@@ -912,10 +1233,7 @@
             errorMessage.classList.add('show');
             setTimeout(function () { errorMessage.classList.remove('show'); }, 2000);
         }
-
-        function hideError() {
-            errorMessage.classList.remove('show');
-        }
+        function hideError() { errorMessage.classList.remove('show'); }
 
         function showSuccess() {
             errorMessage.textContent = 'Разблокировано!';
@@ -939,12 +1257,10 @@
                 else updateLockoutMessage();
             }, 1000);
         }
-
         function updateLockoutMessage() {
             const remaining = Math.ceil((lockoutEndTime - Date.now()) / 1000);
             lockoutMessage.textContent = 'Попробуйте через ' + remaining + ' сек.';
         }
-
         function endLockout() {
             lockoutEndTime = 0;
             failedAttempts = 0;
@@ -953,19 +1269,15 @@
             lockoutTimer = null;
         }
 
+        // ---- История ----
         function addToHistory(code, success) {
             history.unshift({
-                code: code,
-                success: success,
+                code: code, success: success,
                 time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
             });
-            // Сохраняем в localStorage — не теряется при перезапуске PWA
-            try {
-                localStorage.setItem('lockHistory', JSON.stringify(history));
-            } catch (e) {}
+            try { localStorage.setItem(LS_HISTORY_KEY, JSON.stringify(history)); } catch (e) {}
             renderHistory();
         }
-
         function renderHistory() {
             if (history.length === 0) {
                 historyList.innerHTML = '<div class="history-empty">Пока нет попыток</div>';
@@ -975,19 +1287,21 @@
                 return '<div class="history-item">'
                     + '<span class="history-code">' + e.code + '</span>'
                     + '<span class="history-badge ' + (e.success ? 'success' : 'fail') + '">'
-                    + (e.success ? 'Успех' : 'Ошибка')
-                    + '</span></div>';
+                    + (e.success ? 'Успех' : 'Ошибка') + '</span></div>';
             }).join('');
         }
-
         function showHistory() {
             historyOverlay.classList.add('active');
             renderHistory();
         }
-        function hideHistory() {
-            historyOverlay.classList.remove('active');
-        }
+        function hideHistory() { historyOverlay.classList.remove('active'); }
 
+        closeHistory.addEventListener('click', function () {
+            historyPressActive = false;
+            hideHistory();
+        });
+
+        // ---- Клавиатура ----
         keypad.addEventListener('click', function (e) {
             const key = e.target.closest('.key');
             if (!key) return;
@@ -996,18 +1310,20 @@
         deleteKey.addEventListener('click', deleteDigit);
         cancelBtn.addEventListener('click', showLockScreen);
         emergencyBtn.addEventListener('click', function () { alert('Экстренный вызов (заглушка)'); });
-        closeHistory.addEventListener('click', hideHistory);
-        historyOverlay.addEventListener('click', function (e) {
-            if (e.target === historyOverlay) hideHistory();
-        });
 
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && historyOverlay.classList.contains('active')) hideHistory();
+            if (e.key === 'Escape') {
+                if (historyOverlay.classList.contains('active')) { historyPressActive = false; hideHistory(); }
+                if (settingsOverlay.classList.contains('active')) hideSettings();
+            }
         });
 
-        // Показываем сохранённую историю сразу при старте
+        // ---- Init ----
+        applyWallpaper(wallpaperDataUrl);
+        updateWallpaperPreview();
+        renderDots();
+        updateSegmented();
         renderHistory();
-
         resetInput();
     })();
 </script>
